@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ぽっぽと一緒！健康アプリ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#2f8a3e">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<style>
+/* 高齢者向け：大きな文字とボタン。ぽっぽの色（ひまわりの黄・オレンジ・オーバーオールの緑）で組む。単一の明るいテーマ */
+:root{
+  --sky:#eef6ea; --paper:#ffffff; --ink:#22331f; --sub:#4f6150;
+  --leaf:#2f8a3e; --leaf-dark:#1f6b2c; --leaf-soft:#dcefd9;
+  --sun:#ffd23f; --sun-soft:#fff3c4; --orange:#e9791b; --orange-soft:#fde5cf;
+  --blue:#2463a8; --blue-soft:#dde9f7; --line:#cfdcc9;
+  --font:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+  --text:22px; --btn-text:27px; --btn-h:84px; --gap:22px;
+  color-scheme:light;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--sky);color:var(--ink);font-family:var(--font);font-size:var(--text);line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-text-size-adjust:100%;overscroll-behavior:none}
+button{font-family:inherit;color:inherit}
+button:focus-visible{outline:4px solid var(--blue);outline-offset:3px}
+.wrap{max-width:980px;margin:0 auto;padding-block:12px 48px}
+
+/* 上の帯 */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:72px;margin-bottom:12px}
+.back{white-space:nowrap;flex:none;min-height:64px;min-width:150px;padding:0 22px;font-size:24px;font-weight:700;border-radius:18px;border:3px solid var(--leaf);background:var(--paper);color:var(--leaf-dark);cursor:pointer}
+.back[hidden]{display:none}
+.who{margin-left:auto;white-space:nowrap;display:flex;align-items:center;gap:10px;background:var(--paper);border-radius:99px;padding:8px 18px;font-size:22px;font-weight:700;border:2px solid var(--line)}
+@media (max-width:640px){.back{min-width:0;font-size:21px;padding:0 16px}.who{font-size:18px;padding:8px 14px}}
+.seed{display:inline-flex;align-items:center;gap:6px;color:var(--leaf-dark)}
+.seed svg{width:26px;height:26px}
+
+h1{font-size:34px;font-weight:900;margin:8px 0 18px;line-height:1.4;text-wrap:balance}
+.lead{font-size:24px;color:var(--sub);margin:-6px 0 22px}
+.grid{display:grid;gap:var(--gap)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:640px){.g2,.g3{grid-template-columns:minmax(0,1fr)} .g2.keep,.g3.keep{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.big{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;min-height:var(--btn-h);width:100%;padding:16px 24px;
+  border-radius:24px;border:none;cursor:pointer;font-size:var(--btn-text);font-weight:900;text-align:left;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.big small{font-size:20px;font-weight:500;opacity:.92}
+.big:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.12)}
+.c-leaf{background:var(--leaf);color:#fff}
+.c-orange{background:var(--orange);color:#fff}
+.c-blue{background:var(--blue);color:#fff}
+.c-sun{background:var(--sun);color:var(--ink)}
+.c-plain{background:var(--paper);color:var(--ink);border:3px solid var(--line)}
+.big.center{align-items:center;text-align:center}
+.big[aria-disabled="true"]{opacity:.55}
+
+/* ぽっぽ */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:20px;align-items:center;background:var(--paper);border-radius:28px;padding:20px 24px;margin-bottom:var(--gap);border:2px solid var(--line)}
+@media (max-width:640px){.stage{grid-template-columns:minmax(0,1fr)}}
+.poppo{position:relative;width:100%;max-width:300px;aspect-ratio:1;margin:0 auto}
+.poppo .sunbg{position:absolute;inset:6%;border-radius:50%;background:radial-gradient(circle at 50% 45%,var(--sun-soft),var(--sky) 70%)}
+.poppo .body{position:absolute;inset:0;transform-origin:50% 90%;transition:transform .6s;container-type:inline-size}
+.poppo img{width:100%;height:100%;object-fit:contain;display:block}
+.poppo .wear{position:absolute;line-height:1;pointer-events:none;filter:drop-shadow(0 2px 1px rgba(0,0,0,.2))}
+.wear.hat{left:16%;top:-16%;font-size:36cqw}
+.wear.glasses{left:24%;top:15%;font-size:22cqw}
+.wear.muffler{left:40%;top:44%;font-size:22cqw}
+.poppo .zz{position:absolute;right:4%;top:2%;font-size:34px;font-weight:900;color:var(--blue)}
+.poppo.sleepy img{filter:saturate(.75) brightness(.97)}
+.poppo.sleepy .body{transform:rotate(-6deg)}
+.poppo.happy .body{animation:hop .7s ease-in-out 2}
+@keyframes hop{0%,100%{translate:0 0}40%{translate:0 -9%}}
+.bubble{position:relative;background:var(--sun-soft);border-radius:24px;padding:20px 24px;font-size:26px;font-weight:700;line-height:1.55}
+.bubble::before{content:"";position:absolute;left:-14px;top:40%;border:14px solid transparent;border-right-color:var(--sun-soft);border-left:0}
+@media (max-width:640px){.bubble::before{left:50%;top:-14px;border:14px solid transparent;border-bottom-color:var(--sun-soft);border-top:0;translate:-50% 0}}
+.bubble .name{display:block;font-size:20px;color:var(--orange);font-weight:900;margin-bottom:4px}
+.chip{display:inline-block;font-size:20px;font-weight:700;background:var(--leaf-soft);color:var(--leaf-dark);border-radius:99px;padding:4px 16px}
+
+/* 問題 */
+.card{background:var(--paper);border-radius:28px;padding:26px 28px;border:2px solid var(--line);margin-bottom:var(--gap)}
+.q{font-size:34px;font-weight:900;line-height:1.5;margin:0 0 6px;text-wrap:balance}
+.qno{font-size:22px;color:var(--sub);font-weight:700}
+.choice{min-height:96px;font-size:34px}
+.fruits{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;padding:12px 0}
+.fruit{display:flex;flex-direction:column;align-items:center;font-size:80px;line-height:1.1}
+.fruit span{font-size:22px;font-weight:700;color:var(--sub)}
+.tiles{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;margin:16px 0}
+.tile{width:104px;height:104px;border-radius:22px;font-size:52px;font-weight:900;border:none;background:var(--sun);box-shadow:0 4px 0 rgba(0,0,0,.15);cursor:pointer}
+.tile[aria-disabled="true"]{opacity:.25}
+.slots{display:flex;gap:12px;justify-content:center;margin:8px 0 6px}
+.slot{width:96px;height:96px;border-radius:18px;border:4px dashed var(--line);display:grid;place-items:center;font-size:50px;font-weight:900;background:#fff}
+.slot.on{border-style:solid;border-color:var(--leaf)}
+.hint{text-align:center;font-size:72px}
+
+/* 答えの表示 */
+.judge{display:flex;align-items:center;gap:22px;border-radius:24px;padding:20px 26px;margin-bottom:var(--gap)}
+.judge .mark{font-size:84px;font-weight:900;line-height:1}
+.judge p{margin:0;font-size:30px;font-weight:900;line-height:1.4}
+.judge p small{display:block;font-size:22px;font-weight:500;color:var(--sub)}
+.judge.ok{background:var(--leaf-soft)} .judge.ok .mark{color:var(--leaf)}
+.judge.ng{background:var(--orange-soft)} .judge.ng .mark{color:var(--orange)}
+
+/* みんなでモード */
+.minna .q{font-size:clamp(36px,5.6vw,64px)}
+.minna .choice{min-height:120px;font-size:clamp(32px,4.6vw,56px);align-items:center;flex-direction:row;gap:22px;justify-content:flex-start}
+.num{display:inline-grid;place-items:center;flex:none;width:1.6em;height:1.6em;border-radius:50%;background:#fff;font-weight:900}
+.n1{color:var(--blue)} .n2{color:var(--leaf-dark)} .n3{color:var(--orange)}
+.choice.correct{outline:8px solid var(--sun);outline-offset:4px}
+.choice.dim{opacity:.35}
+.note{font-size:26px;background:var(--sun-soft);border-radius:20px;padding:18px 24px;margin-top:var(--gap)}
+
+/* Q&A */
+.ans{font-size:26px;line-height:1.85;margin:0 0 20px}
+.draft{font-size:19px;color:var(--sub);margin-top:8px}
+
+/* おせわ */
+.items{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media (max-width:640px){.items{grid-template-columns:minmax(0,1fr)}}
+.item{display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--paper);border:3px solid var(--line);border-radius:24px;padding:18px 14px;cursor:pointer;font-size:24px;font-weight:700;min-height:180px;justify-content:center}
+.item .ic{font-size:64px;line-height:1}
+.item.own{border-color:var(--leaf)}
+.item.wearing{background:var(--leaf-soft)}
+.progress{height:22px;border-radius:99px;background:var(--leaf-soft);overflow:hidden;margin:10px 0 4px}
+.progress i{display:block;height:100%;background:var(--leaf);border-radius:99px}
+
+.toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));translate:-50% 0;background:var(--ink);color:#fff;font-size:24px;font-weight:700;padding:16px 28px;border-radius:20px;max-width:min(92vw,720px);text-align:center;z-index:20}
+.letter-img{width:100%;max-width:480px;display:block;margin:0 auto 20px;border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+.foot{font-size:18px;color:var(--sub);text-align:center;margin-top:30px}
+.row{display:flex;gap:var(--gap);flex-wrap:wrap}
+.row>*{flex:1 1 260px}
+@media (prefers-reduced-motion:reduce){.poppo.happy .body{animation:none}.poppo .body{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <button class="back" id="back" type="button" hidden>← もどる</button>
+    <div class="who" id="who" hidden></div>
+  </div>
+  <main id="app" aria-live="polite"></main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* =========================================================
+   データ（職員が書き換えてよい部分）
+   ========================================================= */
+const DATA = {
+  flowers: [
+    { id: "sakura", name: "さくら" }, { id: "ume", name: "うめ" }, { id: "momo", name: "もも" },
+    { id: "tsubaki", name: "つばき" }, { id: "sumire", name: "すみれ" }, { id: "yuri", name: "ゆり" },
+    { id: "himawari", name: "ひまわり" }, { id: "ajisai", name: "あじさい" }, { id: "kiku", name: "きく" },
+    { id: "suisen", name: "すいせん" },
+  ],
+  lines: {
+    morning: ["おはよう！きょうも いっしょに がんばろうね", "あさごはん たべたかな？", "いい おてんきだと うれしいね"],
+    noon: ["こんにちは！のうトレ してみる？", "おひるの あとは すこし からだを うごかそう", "きょうも げんきですね！"],
+    evening: ["きょうも おつかれさま", "ゆうがたは あったかくして すごしてね", "あしたも まってるよ"],
+    sleepy: ["あいたかったよ…ふわぁ", "ひさしぶり！また いっしょに あそぼう"],
+    fed: ["おいしい！ありがとう", "おなか いっぱい！げんき でたよ", "もぐもぐ…しあわせ"],
+    grow: ["おおきく なったよ！"],
+  },
+  quiz: {
+    season: { title: "きせつ", items: [
+      { q: "「土用の丑の日」に 食べると よいと されるのは？", c: ["うなぎ", "そうめん", "おもち"], a: 0, note: "夏バテを ふせぐため、栄養のある うなぎを 食べる 習慣が あります。" },
+      { q: "春の七草に 入って いないのは どれ？", c: ["せり", "なずな", "あさがお"], a: 2, note: "あさがおは 夏の花。春の七草は 1月7日の 七草がゆに 入れます。" },
+      { q: "こどもの日に かざる ものは？", c: ["こいのぼり", "ひなにんぎょう", "たんざく"], a: 0, note: "5月5日の こどもの日には、こいのぼりや かぶとを かざります。" },
+      { q: "ひなまつりは 何月何日？", c: ["3月3日", "5月5日", "7月7日"], a: 0, note: "3月3日は 桃の節句とも いいます。" },
+      { q: "七夕で ねがいごとを 書く 紙は？", c: ["たんざく", "はがき", "ちよがみ"], a: 0, note: "たんざくに ねがいを 書いて、ささに かざります。" },
+      { q: "十五夜に おそなえ するのは？", c: ["おだんご", "かしわもち", "ちとせあめ"], a: 0, note: "月見だんごと すすきを かざって、お月見を します。" },
+      { q: "冬至の日に 入る お風呂は？", c: ["ゆず湯", "しょうぶ湯", "もも湯"], a: 0, note: "ゆず湯に 入ると かぜを ひかないと いわれます。しょうぶ湯は こどもの日です。" },
+      { q: "節分の 豆まきで まく ものは？", c: ["だいず", "あずき", "おこめ"], a: 0, note: "「鬼は外、福は内」と いいながら、いった だいずを まきます。" },
+      { q: "大みそかに 食べるのは？", c: ["年越しそば", "おぞうに", "ちらしずし"], a: 0, note: "細く長く 生きられるように、と いう ねがいが こめられて います。" },
+      { q: "秋の七草に 入って いるのは？", c: ["はぎ", "つくし", "たんぽぽ"], a: 0, note: "はぎ・すすき・ききょう・なでしこ などが 秋の七草です。" },
+    ]},
+    mukashi: { title: "むかしの くらし", items: [
+      { q: "せんたくに 使った 道具は？", c: ["せんたく板", "そろばん", "ちゃぶ台"], a: 0, note: "たらいに 水を はって、せんたく板で ごしごし あらいました。" },
+      { q: "ごはんを たいた ところは？", c: ["かまど", "こたつ", "ひばち"], a: 0, note: "まきを もやして、おかまで ごはんを たきました。" },
+      { q: "家族で ごはんを 食べた、足の たためる 丸い台は？", c: ["ちゃぶ台", "たんす", "ついたて"], a: 0, note: "食事が すむと 足を たたんで、へやを 広く 使いました。" },
+      { q: "炭を 入れて 手を あたためた 道具は？", c: ["ひばち", "かや", "うちわ"], a: 0, note: "ひばちで おもちを やいた 思い出の ある方も 多いですね。" },
+      { q: "夏、蚊を ふせぐため 寝床に つるした ものは？", c: ["かや", "のれん", "ふろしき"], a: 0, note: "あみの 目の こまかい かやの 中で ねむりました。" },
+      { q: "計算に 使った 道具は？", c: ["そろばん", "ものさし", "はかり"], a: 0, note: "玉を はじいて 計算します。習いごとで かよった 方も いますね。" },
+      { q: "むかしの 電話で、番号を えらぶとき 回したのは？", c: ["ダイヤル", "ボタン", "ハンドル"], a: 0, note: "黒電話の ダイヤルを ジーコ、ジーコと 回しました。" },
+      { q: "お湯を 入れて、ねるときに 足を あたためる 道具は？", c: ["ゆたんぽ", "かいろ", "こたつ"], a: 0, note: "朝には そのお湯で 顔を あらった 家も ありました。" },
+      { q: "ものを つつんで はこんだ 四角い 布は？", c: ["ふろしき", "てぬぐい", "のれん"], a: 0, note: "ふろしき 1まいで、いろいろな 形の ものを つつめます。" },
+      { q: "ひもを まいて 回して あそぶ ものは？", c: ["こま", "けんだま", "おはじき"], a: 0, note: "おしょうがつには、こま回しや たこあげを しましたね。" },
+    ]},
+    local: { title: "じもと", items: [
+      { q: "【市町村名】の 名物は どれ？（職員が書きかえる問題です）", c: ["【こたえ】", "【ほかの答え1】", "【ほかの答え2】"], a: 0, note: "【解説を書いてください】" },
+      { q: "【地元の川や山の名前】は どれ？（職員が書きかえる問題です）", c: ["【こたえ】", "【ほかの答え1】", "【ほかの答え2】"], a: 0, note: "【解説を書いてください】" },
+      { q: "【地元のお祭り】は 何月？（職員が書きかえる問題です）", c: ["【こたえ】", "【ほかの答え1】", "【ほかの答え2】"], a: 0, note: "【解説を書いてください】" },
+    ]},
+  },
+  qa: [
+    { cat: "介護保険", items: [
+      { q: "介護保険の サービスを 使うには？", a: "まず、お住まいの 市町村の 窓口か、地域包括支援センターで「要介護認定」の 申しこみを します。調査の あと、どのくらい 手助けが 必要かが 決まります。そのあと、ケアマネジャーと いっしょに 使う サービスを 決めます。" },
+      { q: "ケアマネジャーって だれ？", a: "介護の 計画（ケアプラン）を いっしょに 考えて、サービスの 調整を してくれる 専門の 人です。こまったことは、まず ケアマネジャーに 相談して みましょう。" },
+      { q: "地域包括支援センターとは？", a: "高齢の方の くらしや 介護の 相談を うける 窓口です。介護保険を 使う 前でも 相談できます。お住まいの 地区ごとに あります。" },
+      { q: "自分で はらう お金は いくら？", a: "かかった 費用の 一部を はらいます。わりあいは 所得などに よって かわります。くわしい 金額は、市町村の 窓口や ケアマネジャーに たしかめてください。" },
+      { q: "認定の 更新は ひつよう？", a: "要介護認定には 有効期間が あり、更新の 手続きが 必要です。時期が くると お知らせが とどきます。わからない ときは ケアマネジャーに 相談しましょう。" },
+    ]},
+    { cat: "デイの りよう", items: [
+      { q: "デイの もちものは？", a: "連絡帳、着がえ、タオル、お薬が 必要な方は お薬などです。もちものには お名前を 書いて おきましょう。くわしくは、事業所の 案内を ごらんください。" },
+      { q: "休む ときは どうするの？", a: "わかった 時点で、できるだけ 早めに 事業所へ 電話で 連絡して ください。当日の 朝でも だいじょうぶです。" },
+      { q: "デイで お風呂に 入れる？", a: "入浴の サービスが ある 事業所では、職員が お手伝い します。その日の 体調に よっては、見合わせる ことも あります。" },
+      { q: "送り迎えは ある？", a: "送迎の 車で お迎えに 行きます。お迎えの 時間は 事業所から お知らせ します。" },
+      { q: "体調が わるい 日は？", a: "熱が ある、元気が ない など、いつもと ちがう ときは 無理を せず、事業所へ 連絡して ください。" },
+    ]},
+    { cat: "おうちでの 介助", items: [
+      { q: "立ち上がりを 手伝う コツは？", a: "いすに 浅く すわり、足を すこし 手前に ひきます。おじぎを するように 前かがみに なると 立ちやすく なります。手を 強く ひっぱらないように しましょう。" },
+      { q: "家の中で ころばない 工夫は？", a: "床に ものを 置かない、夜も 足もとを 明るく する、はきなれた くつを はく、手すりを つける、などが あります。" },
+      { q: "水分の とりかたは？", a: "のどが かわく 前に、こまめに 少しずつ 飲みましょう。お医者さんから 水分の 量を 言われて いる方は、その 指示に したがって ください。" },
+      { q: "食事で むせる ときは？", a: "すわる 姿勢を ととのえ、あごを 軽く ひいて、ひとくちを 少なめに します。むせが つづく ときは、お医者さんに 相談しましょう。" },
+      { q: "介護する 家族が つかれたら？", a: "ひとりで かかえこまず、デイや ショートステイなどを 使って 休みましょう。ケアマネジャーや 地域包括支援センターにも 相談できます。" },
+    ]},
+    { cat: "からだの 不調", items: [
+      { q: "熱が ある ときは？", a: "水分を とって、からだを 休めましょう。ぐったり している、意識が はっきり しない、などの ときは、すぐに お医者さんに みて もらいましょう。" },
+      { q: "便秘が つづく ときは？", a: "水分と 野菜を とり、からだを 動かすと よいと いわれます。何日も つづく ときや、おなかが いたい ときは、お医者さんに 相談しましょう。" },
+      { q: "ものわすれが 気になる ときは？", a: "まずは かかりつけの お医者さんや、地域包括支援センターに 相談して みましょう。早めの 相談が 安心に つながります。" },
+      { q: "夜 ねむれない ときは？", a: "昼間に からだを 動かし、昼寝は みじかめに します。ねむれない 日が つづく ときは、お医者さんに 相談しましょう。" },
+      { q: "急に ぐあいが わるく なったら？", a: "顔の 半分が ゆがむ、ことばが 出にくい、手足に 力が 入らない、胸が いたい、などの ときは、すぐに 119番に 電話して ください。" },
+    ]},
+  ],
+  fruits: [
+    ["🍎", "りんご"], ["🍊", "みかん"], ["🍌", "バナナ"], ["🍇", "ぶどう"], ["🍓", "いちご"],
+    ["🍑", "もも"], ["🍉", "すいか"], ["🍒", "さくらんぼ"], ["🍐", "なし"], ["🍋", "レモン"],
+  ],
+  words: {
+    easy: [["みかん", "🍊"], ["さくら", "🌸"], ["すいか", "🍉"], ["とけい", "⏰"], ["かえる", "🐸"], ["きつね", "🦊"], ["めがね", "👓"], ["たまご", "🥚"]],
+    normal: [["ひまわり", "🌻"], ["ひこうき", "✈️"], ["たけのこ", "🎋"], ["あさがお", "🌺"], ["てぶくろ", "🧤"], ["おにぎり", "🍙"], ["ふうりん", "🎐"], ["かまぼこ", "🍥"]],
+  },
+  outfits: [
+    { id: "hat", name: "ぼうし", icon: "👒" },
+    { id: "muffler", name: "マフラー", icon: "🧣" },
+    { id: "glasses", name: "メガネ", icon: "👓" },
+  ],
+  stages: [
+    { id: "hina", label: "ひな", min: 0, scale: 0.66 },
+    { id: "kodomo", label: "こども", min: 3, scale: 0.83 },
+    { id: "otona", label: "おとな", min: 10, scale: 1.0 },
+  ],
+  cost: { feed: 3, outfit: 10 },
+  memorySeconds: { easy: 6, normal: 4 },
+};
+
+/* =========================================================
+   保存（この端末の中だけ。外には送らない）
+   ========================================================= */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("poppo:" + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("poppo:" + k, JSON.stringify(v)); } catch (e) {} },
+};
+const blankProfile = () => ({ seeds: 0, feedCount: 0, outfits: [], wearing: [], lastPlayedAt: null });
+let me = null; // 選んでいるニックネーム
+const profile = () => store.get("profile:" + me.id, blankProfile());
+const saveProfile = (p) => store.set("profile:" + me.id, p);
+function addSeeds(n) { const p = profile(); p.seeds += n; p.lastPlayedAt = Date.now(); saveProfile(p); }
+function addLog(game, correct, total) {
+  const l = store.get("log:" + me.id, []);
+  l.push({ date: today(), game, correct, total });
+  store.set("log:" + me.id, l.slice(-300));
+}
+function today() { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); }
+
+/* =========================================================
+   小さな道具
+   ========================================================= */
+const $ = (s) => document.querySelector(s);
+const app = $("#app");
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const rand = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const SEED_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c4 3 6 7 6 11a6 6 0 0 1-12 0c0-4 2-8 6-11z" fill="#c98a2c"/><path d="M12 7v12" stroke="#fff3c4" stroke-width="1.6" stroke-linecap="round"/></svg>';
+let toastTimer;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 2600); }
+
+/* 読み上げ（iPadのSafariは声の一覧が後から届くので待って選ぶ） */
+let jaVoice = null;
+function pickVoice() { try { jaVoice = speechSynthesis.getVoices().find((v) => v.lang && v.lang.startsWith("ja")) || null; } catch (e) {} }
+if ("speechSynthesis" in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function speak(text, btn) {
+  if (!("speechSynthesis" in window)) { toast("この端末では よみあげが 使えません"); return; }
+  if (speechSynthesis.speaking) { speechSynthesis.cancel(); if (btn) btn.textContent = "🔈 よみあげ"; return; }
+  const u = new SpeechSynthesisUtterance(text.replace(/ /g, ""));
+  u.lang = "ja-JP"; u.rate = 0.85; if (jaVoice) u.voice = jaVoice;
+  u.onend = u.onerror = () => { if (btn) btn.textContent = "🔈 よみあげ"; };
+  speechSynthesis.speak(u);
+  if (btn) btn.textContent = "■ とめる";
+}
+function stopSpeak() { try { speechSynthesis.cancel(); } catch (e) {} }
+
+/* =========================================================
+   画面の切り替え
+   ========================================================= */
+let backTo = null;
+function show(html, { back = null } = {}) {
+  stopSpeak();
+  app.innerHTML = html;
+  backTo = back;
+  $("#back").hidden = !back;
+  const who = $("#who");
+  if (me) { who.hidden = false; who.innerHTML = `${esc(me.name)} さん　<span class="seed">${SEED_SVG}たね ${profile().seeds}</span>`; }
+  else who.hidden = true;
+  window.scrollTo(0, 0);
+}
+$("#back").addEventListener("click", () => backTo && backTo());
+app.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-go]");
+  if (b && ACTIONS[b.dataset.go]) ACTIONS[b.dataset.go](b.dataset);
+});
+
+/* ---------- ぽっぽの姿 ---------- */
+function stageOf(p) { let s = DATA.stages[0]; for (const st of DATA.stages) if (p.feedCount >= st.min) s = st; return s; }
+function daysSince(t) { return t ? Math.floor((Date.now() - t) / 86400000) : 0; }
+function poppoHTML(p, mood) {
+  const st = stageOf(p);
+  const wear = (p.wearing || []).map((id) => { const o = DATA.outfits.find((x) => x.id === id); return o ? `<span class="wear ${id}">${o.icon}</span>` : ""; }).join("");
+  return `<div class="poppo ${mood}" id="poppo">
+    <div class="sunbg"></div>
+    <div class="body" style="transform:scale(${st.scale})${mood === "sleepy" ? " rotate(-6deg)" : ""}">
+      <img src="assets/poppo.png" alt="ぽっぽ（${st.label}）" crossorigin="anonymous">${wear}
+    </div>
+    ${mood === "sleepy" ? '<span class="zz">zZ</span>' : ""}
+  </div>`;
+}
+function timeLines() { const h = new Date().getHours(); return h < 11 ? DATA.lines.morning : h < 16 ? DATA.lines.noon : DATA.lines.evening; }
+
+/* =========================================================
+   各画面
+   ========================================================= */
+const ACTIONS = {};
+
+/* F2 ニックネーム */
+function screenProfiles() {
+  me = null;
+  const btns = DATA.flowers.map((f, i) => {
+    const p = store.get("profile:" + f.id, blankProfile());
+    const color = ["c-leaf", "c-orange", "c-blue", "c-sun"][i % 4];
+    return `<button class="big ${color}" type="button" data-go="pickProfile" data-id="${f.id}">${esc(f.name)}<small>たね ${p.seeds}　ぽっぽ：${stageOf(p).label}</small></button>`;
+  }).join("");
+  show(`<h1>だれが あそびますか？</h1>
+    <p class="lead">じぶんの おはなを えらんでください</p>
+    <div class="grid g2 keep">${btns}</div>
+    <p class="foot">記録は この端末の中だけに 保存されます。お名前や 住所は 保存しません。</p>`);
+}
+ACTIONS.pickProfile = (d) => { me = DATA.flowers.find((f) => f.id === d.id); screenHome(); };
+
+/* F1 ホーム */
+function screenHome() {
+  const p = profile();
+  const sleepy = daysSince(p.lastPlayedAt) >= 2;
+  const line = sleepy ? pick(DATA.lines.sleepy) : pick(timeLines());
+  show(`<section class="stage">
+      ${poppoHTML(p, sleepy ? "sleepy" : "")}
+      <div class="bubble"><span class="name">ぽっぽ</span>${esc(me.name)}さん、${esc(line)}</div>
+    </section>
+    <div class="grid g2">
+      <button class="big c-leaf" type="button" data-go="brainMenu">のうトレ<small>たしざん・きおく・ことば</small></button>
+      <button class="big c-orange" type="button" data-go="quizMenu">クイズ<small>きせつ・むかし・じもと</small></button>
+      <button class="big c-sun" type="button" data-go="care">ぽっぽの おせわ<small>ごはん・きせかえ</small></button>
+      <button class="big c-blue" type="button" data-go="qaMenu">しつもん<small>介護の ちょっとした ぎもん</small></button>
+    </div>
+    <div style="height:22px"></div>
+    <button class="big c-plain center" type="button" data-go="letter">かぞくへの おたより<small>今週の がんばりを おくる</small></button>`,
+    { back: screenProfiles });
+}
+ACTIONS.home = screenHome;
+
+/* ---------- 結果画面（共通） ---------- */
+function screenResult(game, correct, total, again) {
+  const gained = correct + 2;
+  addSeeds(gained); addLog(game, correct, total);
+  const p = profile();
+  show(`<section class="stage">
+      ${poppoHTML(p, "happy")}
+      <div class="bubble"><span class="name">ぽっぽ</span>よく できました！<br>${total}もん中 ${correct}もん せいかい。<br>たねを ${gained}こ もらったよ。</div>
+    </section>
+    <div class="grid g2">
+      <button class="big c-leaf center" type="button" data-go="again">もういちど</button>
+      <button class="big c-sun center" type="button" data-go="care">ぽっぽに ごはんを あげる</button>
+    </div>
+    <div style="height:22px"></div>
+    <button class="big c-plain center" type="button" data-go="home">ホームに もどる</button>`, { back: screenHome });
+  ACTIONS.again = again;
+}
+
+/* ---------- 正解・不正解の表示 ---------- */
+function judgeHTML(ok, answerText, extra = "") {
+  return ok
+    ? `<div class="judge ok"><span class="mark" aria-hidden="true">○</span><p>まる！せいかい${extra ? `<small>${esc(extra)}</small>` : ""}</p></div>`
+    : `<div class="judge ng"><span class="mark" aria-hidden="true">×</span><p>おしい！こたえは「${esc(answerText)}」${extra ? `<small>${esc(extra)}</small>` : ""}</p></div>`;
+}
+
+/* =========================================================
+   F3 のうトレ
+   ========================================================= */
+ACTIONS.brainMenu = () => {
+  show(`<h1>のうトレ</h1><p class="lead">あそびと むずかしさを えらんでください（1回 5もん）</p>
+    <div class="grid" style="gap:28px">
+      ${[["add", "たしざん", "4つの こたえから えらぶ"], ["memory", "えの きおく", "見た くだものを おぼえる"], ["word", "ことばならべ", "もじを ならべて ことばに"]].map(([g, t, s], i) => `
+      <div class="card" style="margin:0"><h1 style="margin:0 0 6px">${t}</h1><p class="lead" style="margin:0 0 16px">${s}</p>
+        <div class="grid g2 keep">
+          <button class="big c-leaf center" type="button" data-go="brain" data-g="${g}" data-l="easy">かんたん</button>
+          <button class="big c-orange center" type="button" data-go="brain" data-g="${g}" data-l="normal">ふつう</button>
+        </div></div>`).join("")}
+    </div>`, { back: screenHome });
+};
+ACTIONS.brain = (d) => startBrain(d.g, d.l);
+
+function startBrain(game, level) {
+  const total = 5; let n = 0, correct = 0;
+  const name = { add: "たしざん", memory: "えの きおく", word: "ことばならべ" }[game];
+  const usedWords = new Set();
+  const next = () => {
+    if (n >= total) return screenResult(name, correct, total, () => startBrain(game, level));
+    n++;
+    ({ add: playAdd, memory: playMemory, word: playWord })[game](level, n, total, (ok) => { if (ok) correct++; }, next, usedWords);
+  };
+  next();
+}
+function afterAnswer(html, onNext) {
+  const box = $("#after"); box.innerHTML = html + `<button class="big c-leaf center" type="button" id="nextBtn">つぎへ</button>`;
+  $("#nextBtn").addEventListener("click", onNext); $("#nextBtn").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function playAdd(level, n, total, mark, next) {
+  const a = level === "easy" ? rand(1, 9) : rand(11, 49);
+  const b = rand(level === "easy" ? 1 : 2, 9);
+  const ans = a + b;
+  const set = new Set([ans]);
+  while (set.size < 4) { const v = ans + rand(-4, 4); if (v > 0 && v !== ans) set.add(v); }
+  const choices = shuffle([...set]);
+  show(`<p class="qno">たしざん　${n} / ${total}もん</p>
+    <div class="card"><p class="q" style="font-size:56px;text-align:center">${a} ＋ ${b} は？</p></div>
+    <div class="grid g2 keep" id="choices">${choices.map((c) => `<button class="big c-plain center choice" type="button" data-v="${c}">${c}</button>`).join("")}</div>
+    <div id="after" style="margin-top:22px"></div>`, { back: ACTIONS.brainMenu });
+  choiceHandler((v) => +v === ans, String(ans), mark, next);
+}
+function choiceHandler(isOk, answerText, mark, next, extra) {
+  const box = $("#choices"); let done = false;
+  box.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b || done) return; done = true;
+    const ok = isOk(b.dataset.v); mark(ok);
+    box.querySelectorAll("button").forEach((x) => { if (x !== b) x.classList.add("dim"); });
+    b.classList.add(ok ? "correct" : "dim");
+    afterAnswer(judgeHTML(ok, answerText, extra), next);
+  });
+}
+
+function playMemory(level, n, total, mark, next) {
+  const count = level === "easy" ? 3 : 5;
+  const pool = shuffle(DATA.fruits);
+  const shown = pool.slice(0, count), notShown = pool.slice(count);
+  const target = pick(shown);
+  const choices = shuffle([target, ...shuffle(notShown).slice(0, 3)]);
+  const secs = DATA.memorySeconds[level];
+  show(`<p class="qno">えの きおく　${n} / ${total}もん</p>
+    <div class="card" style="text-align:center"><p class="q">よーく 見てね</p>
+      <div class="fruits">${shown.map(([e, nm]) => `<div class="fruit">${e}<span>${nm}</span></div>`).join("")}</div>
+      <p class="lead" id="count" style="margin:0">あと ${secs} びょう</p></div>`, { back: ACTIONS.brainMenu });
+  let left = secs;
+  const timer = setInterval(() => {
+    left--; const c = $("#count");
+    if (!c) return clearInterval(timer);
+    if (left > 0) { c.textContent = `あと ${left} びょう`; return; }
+    clearInterval(timer);
+    show(`<p class="qno">えの きおく　${n} / ${total}もん</p>
+      <div class="card"><p class="q" style="text-align:center">さっき あったのは どれ かな？</p></div>
+      <div class="grid g2 keep" id="choices">${choices.map(([e, nm]) => `<button class="big c-plain center choice" type="button" data-v="${nm}" style="min-height:150px"><span style="font-size:64px;line-height:1.1">${e}</span><small>${nm}</small></button>`).join("")}</div>
+      <div id="after" style="margin-top:22px"></div>`, { back: ACTIONS.brainMenu });
+    choiceHandler((v) => v === target[1], target[1], mark, next, "あったのは " + shown.map((s) => s[1]).join("・"));
+  }, 1000);
+}
+
+function playWord(level, n, total, mark, next, used) {
+  const list = DATA.words[level].filter((w) => !used.has(w[0]));
+  const [word, icon] = pick(list.length ? list : DATA.words[level]); used.add(word);
+  const chars = [...word];
+  let order; do { order = shuffle(chars.map((c, i) => i)); } while (order.every((v, i) => v === i));
+  const picked = [];
+  show(`<p class="qno">ことばならべ　${n} / ${total}もん</p>
+    <div class="card" style="text-align:center">
+      <p class="q">もじを じゅんばんに おして、ことばに しよう</p>
+      ${level === "easy" ? `<div class="hint" aria-label="ヒント">${icon}</div>` : ""}
+      <div class="slots" id="slots">${chars.map(() => `<div class="slot"></div>`).join("")}</div>
+      <div class="tiles" id="tiles">${order.map((i) => `<button class="tile" type="button" data-i="${i}">${chars[i]}</button>`).join("")}</div>
+      <button class="big c-plain center" type="button" id="undo" style="max-width:420px;margin:0 auto">ひとつ もどす</button>
+    </div>
+    ${level === "normal" ? `<button class="big c-plain center" type="button" id="hintBtn">ヒントを 見る</button>` : ""}
+    <div id="after" style="margin-top:22px"></div>`, { back: ACTIONS.brainMenu });
+  const slots = [...document.querySelectorAll(".slot")];
+  let done = false;
+  const paint = () => {
+    slots.forEach((s, i) => { s.textContent = picked[i] != null ? chars[picked[i]] : ""; s.classList.toggle("on", picked[i] != null); });
+    document.querySelectorAll(".tile").forEach((t) => t.setAttribute("aria-disabled", picked.includes(+t.dataset.i) ? "true" : "false"));
+  };
+  $("#tiles").addEventListener("click", (e) => {
+    const t = e.target.closest(".tile"); if (!t || done) return;
+    const i = +t.dataset.i; if (picked.includes(i)) return;
+    picked.push(i); paint();
+    if (picked.length === chars.length) {
+      done = true;
+      const ok = picked.map((i) => chars[i]).join("") === word; mark(ok);
+      $("#undo").hidden = true;
+      afterAnswer(judgeHTML(ok, word + " " + icon), next);
+    }
+  });
+  $("#undo").addEventListener("click", () => { if (!done && picked.length) { picked.pop(); paint(); } });
+  const hb = $("#hintBtn"); if (hb) hb.addEventListener("click", () => { hb.outerHTML = `<div class="card hint">${icon}</div>`; });
+}
+
+/* =========================================================
+   F4 クイズ
+   ========================================================= */
+ACTIONS.quizMenu = () => {
+  const g = Object.entries(DATA.quiz);
+  show(`<h1>クイズ</h1><p class="lead">ジャンルと あそびかたを えらんでください</p>
+    <div class="grid" style="gap:28px">
+    ${g.map(([id, v]) => `<div class="card" style="margin:0"><h1 style="margin:0 0 14px">${v.title}<span class="chip" style="margin-left:12px">${v.items.length}もん</span></h1>
+      <div class="grid g2 keep">
+        <button class="big c-orange center" type="button" data-go="quiz" data-g="${id}" data-m="solo">ひとりで</button>
+        <button class="big c-blue center" type="button" data-go="quiz" data-g="${id}" data-m="minna">みんなで<small>テレビに うつす</small></button>
+      </div></div>`).join("")}
+    </div>`, { back: screenHome });
+};
+ACTIONS.quiz = (d) => startQuiz(d.g, d.m);
+
+function startQuiz(gid, mode) {
+  const g = DATA.quiz[gid];
+  const items = shuffle(g.items);
+  let n = 0, correct = 0;
+  const next = () => {
+    if (n >= items.length) return screenResult("クイズ（" + g.title + "）", correct, items.length, () => startQuiz(gid, mode));
+    const it = items[n++];
+    const order = shuffle(it.c.map((c, i) => i));
+    const NUM = ["①", "②", "③"], CLS = ["c-blue", "c-leaf", "c-orange"], NC = ["n1", "n2", "n3"];
+    const minna = mode === "minna";
+    show(`<div class="${minna ? "minna" : ""}">
+      <p class="qno">${g.title}　${n} / ${items.length}もん${minna ? "　（みんなで）" : ""}</p>
+      <div class="card"><p class="q">${esc(it.q)}</p>
+        <button class="big c-plain center" type="button" id="say" style="max-width:340px;min-height:64px;font-size:24px;margin-top:12px">🔈 よみあげ</button></div>
+      <div class="grid" id="choices">${order.map((i, k) => minna
+        ? `<button class="big ${CLS[k]} choice" type="button" data-v="${i}"><span class="num ${NC[k]}">${NUM[k]}</span>${esc(it.c[i])}</button>`
+        : `<button class="big c-plain choice" type="button" data-v="${i}"><span><span class="num ${NC[k]}" style="background:var(--sky)">${NUM[k]}</span> ${esc(it.c[i])}</span></button>`).join("")}</div>
+      ${minna ? `<div style="height:22px"></div><button class="big c-sun center" type="button" id="reveal">こたえを 見る</button>` : ""}
+      <div id="after" style="margin-top:22px"></div></div>`, { back: ACTIONS.quizMenu });
+    $("#say").addEventListener("click", (e) => speak(it.q + "。" + order.map((i, k) => (k + 1) + "ばん、" + it.c[i]).join("。"), e.currentTarget));
+    if (minna) {
+      $("#reveal").addEventListener("click", () => {
+        $("#reveal").hidden = true; correct++;
+        document.querySelectorAll("#choices button").forEach((b) => b.classList.add(+b.dataset.v === it.a ? "correct" : "dim"));
+        afterAnswer(`<div class="judge ok"><span class="mark">○</span><p>こたえは「${esc(it.c[it.a])}」</p></div><div class="note">${esc(it.note)}</div><div style="height:22px"></div>`, next);
+      });
+    } else {
+      choiceHandler((v) => +v === it.a, it.c[it.a], (ok) => { if (ok) correct++; }, next);
+      // 答えたあとに、ひとこと解説を出す
+      $("#choices").addEventListener("click", () => {
+        const j = $("#after .judge");
+        if (j && !$("#after .note")) j.insertAdjacentHTML("afterend", `<div class="note" style="margin:0 0 22px">${esc(it.note)}</div>`);
+      });
+    }
+  };
+  next();
+}
+
+/* =========================================================
+   F5 おせわ
+   ========================================================= */
+function screenCare(mood = "", msg = "") {
+  const p = profile();
+  const st = stageOf(p);
+  const nextSt = DATA.stages.find((s) => s.min > p.feedCount);
+  const line = msg || (daysSince(p.lastPlayedAt) >= 2 ? pick(DATA.lines.sleepy) : "ごはん ちょうだい！");
+  const pct = nextSt ? Math.round(((p.feedCount - st.min) / (nextSt.min - st.min)) * 100) : 100;
+  show(`<section class="stage">
+      ${poppoHTML(p, mood)}
+      <div><div class="bubble"><span class="name">ぽっぽ</span>${esc(line)}</div>
+        <p style="margin:18px 0 0"><span class="chip">いまは「${st.label}」</span></p>
+        <div class="progress" aria-hidden="true"><i style="width:${pct}%"></i></div>
+        <p style="margin:0;font-size:20px;color:var(--sub)">${nextSt ? `あと ${nextSt.min - p.feedCount}かい ごはんで「${nextSt.label}」に なるよ` : "りっぱな おとなに なったよ"}</p></div>
+    </section>
+    <button class="big c-sun center" type="button" data-go="feed" ${p.seeds < DATA.cost.feed ? 'aria-disabled="true"' : ""}>ごはんを あげる<small>たね ${DATA.cost.feed}こ</small></button>
+    <h1 style="margin-top:34px">きせかえ<span class="chip" style="margin-left:12px">たね ${DATA.cost.outfit}こ で こうかん</span></h1>
+    <div class="items">${DATA.outfits.map((o) => {
+      const own = p.outfits.includes(o.id), on = p.wearing.includes(o.id);
+      return `<button class="item ${own ? "own" : ""} ${on ? "wearing" : ""}" type="button" data-go="outfit" data-id="${o.id}">
+        <span class="ic">${o.icon}</span>${o.name}<small style="font-size:20px;color:var(--sub)">${own ? (on ? "つけている（おすと はずす）" : "おすと つける") : "こうかんする"}</small></button>`;
+    }).join("")}</div>`, { back: screenHome });
+}
+ACTIONS.care = () => screenCare();
+ACTIONS.feed = () => {
+  const p = profile();
+  if (p.seeds < DATA.cost.feed) return toast("たねが たりないよ。のうトレや クイズで あつめよう");
+  const before = stageOf(p);
+  p.seeds -= DATA.cost.feed; p.feedCount++; p.lastPlayedAt = Date.now(); saveProfile(p);
+  const after = stageOf(p);
+  if (after.id !== before.id) screenCare("happy", `おおきく なったよ！いまは「${after.label}」だよ`);
+  else screenCare("happy", pick(DATA.lines.fed));
+};
+ACTIONS.outfit = (d) => {
+  const p = profile(); const o = DATA.outfits.find((x) => x.id === d.id);
+  if (!p.outfits.includes(o.id)) {
+    if (p.seeds < DATA.cost.outfit) return toast(`${o.name}は たね ${DATA.cost.outfit}こ で こうかん できるよ`);
+    p.seeds -= DATA.cost.outfit; p.outfits.push(o.id); p.wearing.push(o.id); saveProfile(p);
+    return screenCare("happy", `${o.name}、にあう かな？`);
+  }
+  p.wearing = p.wearing.includes(o.id) ? p.wearing.filter((x) => x !== o.id) : [...p.wearing, o.id];
+  saveProfile(p); screenCare("", p.wearing.includes(o.id) ? `${o.name}を つけたよ` : `${o.name}を はずしたよ`);
+};
+
+/* =========================================================
+   F6 しつもん
+   ========================================================= */
+ACTIONS.qaMenu = () => {
+  const cols = ["c-blue", "c-leaf", "c-orange", "c-sun"];
+  show(`<h1>しつもん</h1><p class="lead">しりたい ことの なかまを えらんでください</p>
+    <div class="grid g2">${DATA.qa.map((c, i) => `<button class="big ${cols[i]}" type="button" data-go="qaCat" data-i="${i}">${c.cat}<small>${c.items.length}こ の しつもん</small></button>`).join("")}</div>
+    <p class="foot">※ こたえは 職員が 確認する 前の 下書きです。</p>`, { back: screenHome });
+};
+ACTIONS.qaCat = (d) => {
+  const c = DATA.qa[d.i];
+  show(`<h1>${c.cat}</h1>
+    <div class="grid">${c.items.map((q, j) => `<button class="big c-plain" type="button" data-go="qa" data-i="${d.i}" data-j="${j}">${esc(q.q)}</button>`).join("")}</div>`, { back: ACTIONS.qaMenu });
+};
+ACTIONS.qa = (d) => {
+  const c = DATA.qa[d.i], q = c.items[d.j];
+  const full = q.a + " くわしくは、デイの 職員に きいて ください。";
+  show(`<p class="qno">${c.cat}</p>
+    <div class="card"><p class="q">${esc(q.q)}</p></div>
+    <div class="card"><p class="ans">${esc(full)}</p>
+      <button class="big c-blue center" type="button" id="say">🔈 よみあげ</button>
+      <p class="draft">※ 職員が 確認する 前の 下書きです。</p></div>
+    <button class="big c-plain center" type="button" data-go="qaCat" data-i="${d.i}">ほかの しつもんを 見る</button>`, { back: () => ACTIONS.qaCat({ i: d.i }) });
+  $("#say").addEventListener("click", (e) => speak(q.q + "。" + full, e.currentTarget));
+};
+
+/* =========================================================
+   F7 かぞくへの おたより
+   ========================================================= */
+function weekStats() {
+  const now = new Date(); const day = (now.getDay() + 6) % 7; // 月曜=0
+  const mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day);
+  const logs = store.get("log:" + me.id, []).filter((l) => { const [y, m, d] = l.date.split("-").map(Number); return new Date(y, m - 1, d) >= mon; });
+  return { mon, days: new Set(logs.map((l) => l.date)).size, correct: logs.reduce((s, l) => s + l.correct, 0), plays: logs.length };
+}
+function loadImg(src) { return new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; }); }
+async function drawLetter() {
+  const W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const g = cv.getContext("2d"); const p = profile(); const s = weekStats(); const st = stageOf(p);
+  const font = (w, px) => `${w} ${px}px "Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif`;
+  g.fillStyle = "#eef6ea"; g.fillRect(0, 0, W, H);
+  g.fillStyle = "#ffffff"; roundRect(g, 50, 50, W - 100, H - 100, 48); g.fill();
+  g.fillStyle = "#2f8a3e"; g.font = font(900, 64); g.textAlign = "center";
+  g.fillText(`${me.name}さんの`, W / 2, 170); g.fillText("今週の がんばり", W / 2, 250);
+  const md = (d) => `${d.getMonth() + 1}月${d.getDate()}日`;
+  g.fillStyle = "#4f6150"; g.font = font(500, 38); g.fillText(`${md(s.mon)} 〜 ${md(new Date())}`, W / 2, 320);
+  // ぽっぽ
+  g.fillStyle = "#fff3c4"; g.beginPath(); g.arc(W / 2, 600, 230, 0, Math.PI * 2); g.fill();
+  const img = await loadImg("assets/poppo.png");
+  if (img) {
+    const sz = 440 * st.scale, x0 = W / 2 - sz / 2, y0 = 820 - sz;
+    g.drawImage(img, x0, y0, sz, sz);
+    g.font = `${Math.round(sz * 0.27)}px sans-serif`; g.textAlign = "left";
+    if (p.wearing.includes("hat")) g.fillText("👒", x0 + sz * 0.2, y0 + sz * 0.13);
+    g.font = `${Math.round(sz * 0.17)}px sans-serif`;
+    if (p.wearing.includes("glasses")) g.fillText("👓", x0 + sz * 0.23, y0 + sz * 0.33);
+    if (p.wearing.includes("muffler")) g.fillText("🧣", x0 + sz * 0.4, y0 + sz * 0.6);
+    g.textAlign = "center";
+  }
+  // 数字
+  const box = (x, label, val) => {
+    g.fillStyle = "#dcefd9"; roundRect(g, x, 880, 440, 190, 32); g.fill();
+    g.fillStyle = "#1f6b2c"; g.font = font(700, 40); g.fillText(label, x + 220, 945);
+    g.font = font(900, 84); g.fillText(val, x + 220, 1040);
+  };
+  box(90, "あそんだ日", `${s.days}日`); box(550, "せいかいした数", `${s.correct}もん`);
+  g.fillStyle = "#22331f"; g.font = font(700, 44);
+  g.fillText(`ぽっぽ「今週も いっしょに がんばったよ」`, W / 2, 1150);
+  g.fillStyle = "#4f6150"; g.font = font(500, 32);
+  g.fillText(`ぽっぽは いま「${st.label}」　ぽっぽと一緒！健康アプリ`, W / 2, 1230);
+  return cv;
+}
+function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+
+ACTIONS.letter = async () => {
+  show(`<h1>かぞくへの おたより</h1><p class="lead">カードを つくっています…</p>`, { back: screenHome });
+  try { await document.fonts.ready; } catch (e) {}
+  const cv = await drawLetter();
+  let url = ""; try { url = cv.toDataURL("image/png"); } catch (e) {}
+  show(`<h1>かぞくへの おたより</h1>
+    <p class="lead">今週の がんばりを カードに しました</p>
+    ${url ? `<img class="letter-img" src="${url}" alt="${esc(me.name)}さんの 今週の がんばり カード">` : ""}
+    <button class="big c-leaf center" type="button" id="send">おくる<small>LINE や メールを えらべます</small></button>
+    <p class="foot" id="saveNote">おくれない ときは、カードを 長く おして「保存」を えらんでください。</p>`, { back: screenHome });
+  $("#send").addEventListener("click", async () => {
+    try {
+      const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
+      const file = new File([blob], "poppo-otayori.png", { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: "今週の がんばり", text: `${me.name}さんの 今週の がんばりです（ぽっぽと一緒！健康アプリ）` });
+        return;
+      }
+    } catch (e) { if (e && e.name === "AbortError") return; }
+    toast("この画面では おくれません。カードを 長く おして 保存してください");
+  });
+};
+
+/* =========================================================
+   はじまり
+   ========================================================= */
+screenProfiles();
+if ("serviceWorker" in navigator && /^https:|^http:\/\/localhost/.test(location.href)) {
+  try { navigator.serviceWorker.register("sw.js").catch(() => {}); } catch (e) {}
+}
+</script>
+</body>
+</html>
