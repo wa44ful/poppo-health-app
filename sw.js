@@ -1,5 +1,5 @@
 // オフラインで動かすため、アプリのファイルを端末に保存する
-const CACHE = "poppo-v1";
+const CACHE = "poppo-v2";
 const FILES = ["./", "index.html", "manifest.json", "assets/poppo.png", "assets/icon-192.png", "assets/icon-512.png"];
 
 self.addEventListener("install", (e) => {

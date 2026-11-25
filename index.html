@@ -65,11 +65,11 @@ h1{font-size:34px;font-weight:900;margin:8px 0 18px;line-height:1.4;text-wrap:ba
 .poppo{position:relative;width:100%;max-width:300px;aspect-ratio:1;margin:0 auto}
 .poppo .sunbg{position:absolute;inset:6%;border-radius:50%;background:radial-gradient(circle at 50% 45%,var(--sun-soft),var(--sky) 70%)}
 .poppo .body{position:absolute;inset:0;transform-origin:50% 90%;transition:transform .6s;container-type:inline-size}
-.poppo img{width:100%;height:100%;object-fit:contain;display:block}
+.poppo img{width:100%;height:100%;object-fit:contain;display:block;image-rendering:pixelated}
 .poppo .wear{position:absolute;line-height:1;pointer-events:none;filter:drop-shadow(0 2px 1px rgba(0,0,0,.2))}
-.wear.hat{left:16%;top:-16%;font-size:36cqw}
-.wear.glasses{left:24%;top:15%;font-size:22cqw}
-.wear.muffler{left:40%;top:44%;font-size:22cqw}
+.wear.hat{left:31%;top:-12%;font-size:38cqw}
+.wear.glasses{left:37%;top:33%;font-size:26cqw}
+.wear.muffler{left:39.5%;top:62%;font-size:21cqw}
 .poppo .zz{position:absolute;right:4%;top:2%;font-size:34px;font-weight:900;color:var(--blue)}
 .poppo.sleepy img{filter:saturate(.75) brightness(.97)}
 .poppo.sleepy .body{transform:rotate(-6deg)}
@@ -665,12 +665,12 @@ async function drawLetter() {
   const img = await loadImg("assets/poppo.png");
   if (img) {
     const sz = 440 * st.scale, x0 = W / 2 - sz / 2, y0 = 820 - sz;
-    g.drawImage(img, x0, y0, sz, sz);
-    g.font = `${Math.round(sz * 0.27)}px sans-serif`; g.textAlign = "left";
-    if (p.wearing.includes("hat")) g.fillText("👒", x0 + sz * 0.2, y0 + sz * 0.13);
-    g.font = `${Math.round(sz * 0.17)}px sans-serif`;
-    if (p.wearing.includes("glasses")) g.fillText("👓", x0 + sz * 0.23, y0 + sz * 0.33);
-    if (p.wearing.includes("muffler")) g.fillText("🧣", x0 + sz * 0.4, y0 + sz * 0.6);
+    g.imageSmoothingEnabled = false; g.drawImage(img, x0, y0, sz, sz);
+    g.textAlign = "left";
+    const put = (e, fx, fy, fs) => { g.font = `${Math.round(sz * fs)}px sans-serif`; g.fillText(e, x0 + sz * fx, y0 + sz * fy); };
+    if (p.wearing.includes("hat")) put("👒", 0.31, 0.21, 0.38);
+    if (p.wearing.includes("glasses")) put("👓", 0.37, 0.545, 0.26);
+    if (p.wearing.includes("muffler")) put("🧣", 0.395, 0.80, 0.21);
     g.textAlign = "center";
   }
   // 数字
